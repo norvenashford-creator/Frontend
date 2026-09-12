@@ -62,6 +62,7 @@ export const CustomerInputForm: React.FC<CustomerInputFormProps> = ({
   const [customerLifespan, setCustomerLifespan] = useState<string>(initialValues?.customerLifespan?.toString() || '365');
   const [avgPurchaseInterval, setAvgPurchaseInterval] = useState<string>(initialValues?.avgPurchaseInterval?.toString() || '45');
   const [medianPurchaseInterval, setMedianPurchaseInterval] = useState<string>(initialValues?.medianPurchaseInterval?.toString() || '40');
+  const [marketingStrategy, setMarketingStrategy] = useState<string>(initialValues?.marketingStrategy || '');
 
   const [validationError, setValidationError] = useState<string | null>(null);
 
@@ -75,6 +76,13 @@ export const CustomerInputForm: React.FC<CustomerInputFormProps> = ({
       setCustomerLifespan(preset.values.customerLifespan.toString());
       setAvgPurchaseInterval(preset.values.avgPurchaseInterval.toString());
       setMedianPurchaseInterval(preset.values.medianPurchaseInterval.toString());
+      setMarketingStrategy(
+        key === 'high-risk'
+          ? 'Send 25% discount coupon via email blast'
+          : key === 'medium-risk'
+          ? 'Snooze subscription cadence by 30 days & offer product swap'
+          : 'VIP Tier recognition with double points and private drop invite'
+      );
       setValidationError(null);
     }
   };
@@ -87,6 +95,7 @@ export const CustomerInputForm: React.FC<CustomerInputFormProps> = ({
     setCustomerLifespan('');
     setAvgPurchaseInterval('');
     setMedianPurchaseInterval('');
+    setMarketingStrategy('');
     setValidationError(null);
   };
 
@@ -140,6 +149,7 @@ export const CustomerInputForm: React.FC<CustomerInputFormProps> = ({
       customerLifespan: lifeNum,
       avgPurchaseInterval: avgNum,
       medianPurchaseInterval: medNum,
+      marketingStrategy: marketingStrategy.trim() || undefined,
     });
   };
 
@@ -404,6 +414,64 @@ export const CustomerInputForm: React.FC<CustomerInputFormProps> = ({
             <p className="mt-1 text-[11px] text-slate-400">
               Median interval mitigating outlier distortion.
             </p>
+          </div>
+        </div>
+
+        {/* NEW FEATURE: Proposed Marketing Strategy (Evaluated against 10 Case Studies) */}
+        <div className="rounded-xl border border-indigo-500/20 bg-indigo-950/10 p-4.5 sm:p-5">
+          <div className="flex items-center justify-between gap-2 mb-2">
+            <label
+              htmlFor="marketing-strategy-input"
+              className="block text-xs font-semibold uppercase tracking-wider text-indigo-300"
+            >
+              Proposed Marketing Retention Strategy (Optional)
+            </label>
+            <span className="text-[11px] font-semibold text-indigo-400 bg-indigo-500/15 px-2 py-0.5 rounded border border-indigo-500/30">
+              Evaluated against 10 Case Studies
+            </span>
+          </div>
+          <p className="text-xs text-slate-300 mb-2.5">
+            Enter the marketing campaign or action planned for this account. The ML engine will analyze its viability and provide empirical feedback.
+          </p>
+          <input
+            id="marketing-strategy-input"
+            type="text"
+            value={marketingStrategy}
+            onChange={(e) => setMarketingStrategy(e.target.value)}
+            placeholder="e.g. Send 25% discount email, Snooze delivery cadence by 30 days, or Schedule executive CSM check-in"
+            disabled={isLoading}
+            className="w-full rounded-xl border border-white/10 bg-slate-800/80 px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 transition-colors disabled:opacity-50"
+          />
+          <div className="mt-2.5 flex flex-wrap items-center gap-2 text-[11px] text-slate-400">
+            <span className="font-semibold text-slate-300">Quick ideas:</span>
+            <button
+              type="button"
+              onClick={() => setMarketingStrategy('VIP tier protection with double points and private concierge access')}
+              className="rounded bg-slate-800 px-2 py-0.5 hover:text-white hover:bg-slate-700 transition-colors cursor-pointer"
+            >
+              VIP Tier Perks
+            </button>
+            <button
+              type="button"
+              onClick={() => setMarketingStrategy('Snooze subscription interval by 30 days with 1-click flexibility')}
+              className="rounded bg-slate-800 px-2 py-0.5 hover:text-white hover:bg-slate-700 transition-colors cursor-pointer"
+            >
+              Interval Snooze
+            </button>
+            <button
+              type="button"
+              onClick={() => setMarketingStrategy('Personalized milestone recap with limited-time 20% re-activation coupon')}
+              className="rounded bg-slate-800 px-2 py-0.5 hover:text-white hover:bg-slate-700 transition-colors cursor-pointer"
+            >
+              Milestone Win-back
+            </button>
+            <button
+              type="button"
+              onClick={() => setMarketingStrategy('Executive account briefing with productivity telemetry & CSM review')}
+              className="rounded bg-slate-800 px-2 py-0.5 hover:text-white hover:bg-slate-700 transition-colors cursor-pointer"
+            >
+              B2B CSM Call
+            </button>
           </div>
         </div>
 

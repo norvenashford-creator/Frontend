@@ -10,15 +10,18 @@ import { RecommendationCard } from './RecommendationCard';
 import { EvidenceCard } from './EvidenceCard';
 import { LimitationsCard } from './LimitationsCard';
 import { TestRecommendationCard } from './TestRecommendationCard';
+import { StrategyFeedbackCard } from './StrategyFeedbackCard';
 
 interface CustomerIntelligenceViewProps {
   result: CustomerIntelligenceResult;
   onAnalyzeAnother: () => void;
+  onExploreCaseStudy?: (caseStudyId?: string) => void;
 }
 
 export const CustomerIntelligenceView: React.FC<CustomerIntelligenceViewProps> = ({
   result,
   onAnalyzeAnother,
+  onExploreCaseStudy,
 }) => {
   // Format revenue exposure professionally as currency
   const formattedRevenue = new Intl.NumberFormat('en-US', {
@@ -170,6 +173,17 @@ export const CustomerIntelligenceView: React.FC<CustomerIntelligenceViewProps> =
           <LifecycleCard lifecycleContext={result.lifecycle_context} />
         </div>
       </div>
+
+      {/* -------------------------------------
+          STRATEGY EVALUATION & FEEDBACK (IF PROVIDED)
+          ------------------------------------- */}
+      {result.strategy_evaluation && (
+        <StrategyFeedbackCard
+          evaluation={result.strategy_evaluation}
+          strategyName={result.marketing_strategy}
+          onExploreCaseStudy={onExploreCaseStudy}
+        />
+      )}
 
       {/* -------------------------------------
           4. RECOMMENDED RETENTION STRATEGY:

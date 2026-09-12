@@ -14,19 +14,33 @@ export interface CustomerInput {
   customerLifespan: number;
   avgPurchaseInterval: number;
   medianPurchaseInterval: number;
+  marketingStrategy?: string; // New feature: user's proposed or current retention strategy
 }
 
 export interface CaseStudy {
-  name?: string;
-  company?: string;
-  case_name?: string;
-  relevant_pattern?: string;
-  pattern?: string;
-  strategy?: string;
-  evidence_strength?: EvidenceStrength | string;
-  rationale?: string;
-  url?: string;
+  id: string;
+  name: string;
+  company: string;
+  industry: string;
+  relevant_pattern: string;
+  strategy: string;
+  evidence_strength: EvidenceStrength;
+  empirical_outcome: string;
+  rationale: string;
+  key_takeaways: string[];
+  best_channels: string[];
+  matched_risk_levels: RiskLevel[];
   source?: string;
+}
+
+export interface StrategyEvaluation {
+  score: number; // 0 to 100
+  verdict: 'Optimal Alignment' | 'Moderate Alignment' | 'Potential Risk / Ineffective';
+  rationale: string;
+  matchedCaseStudy?: CaseStudy;
+  strengths: string[];
+  risksOrFlaws: string[];
+  recommendations: string[];
 }
 
 export interface TestRecommendationData {
@@ -49,6 +63,8 @@ export interface CustomerIntelligenceResult {
   rationale: string;
   limitations: string | string[];
   test_recommendation: string | TestRecommendationData;
+  marketing_strategy?: string;
+  strategy_evaluation?: StrategyEvaluation;
   model_metadata?: {
     model_name?: string;
     version?: string;
@@ -57,6 +73,44 @@ export interface CustomerIntelligenceResult {
       medium: number;
     };
   };
+}
+
+export interface BatchCustomerRow {
+  rowId: string | number;
+  customerId: string;
+  frequency: number;
+  monetary: number;
+  recency: number;
+  customerLifespan: number;
+  avgPurchaseInterval: number;
+  medianPurchaseInterval: number;
+  marketingStrategy?: string;
+  rawRowData?: Record<string, any>;
+}
+
+export interface BatchCustomerResult extends BatchCustomerRow {
+  churnProbability: number;
+  riskSegment: RiskLevel;
+  revenueExposure: number;
+  keySignals: string[];
+  recommendedStrategy: string;
+  recommendedChannel: string;
+  strategyEvaluation?: StrategyEvaluation;
+  matchingCaseStudyName?: string;
+  fullIntelligence?: CustomerIntelligenceResult;
+}
+
+export interface BatchUploadSummary {
+  fileName: string;
+  fileSize: number;
+  totalRows: number;
+  highRiskCount: number;
+  mediumRiskCount: number;
+  lowRiskCount: number;
+  averageChurnProbability: number;
+  totalRevenueExposure: number;
+  strategyMatchAverage: number;
+  processedAt: Date;
 }
 
 export interface AggregateMetrics {
@@ -78,4 +132,4 @@ export interface ApiStatus {
   error?: string;
 }
 
-export type ActiveTab = 'overview' | 'intelligence' | 'recommendations' | 'about';
+export type ActiveTab = 'overview' | 'batch_upload' | 'intelligence' | 'case_studies' | 'recommendations' | 'about';

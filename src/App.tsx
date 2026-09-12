@@ -12,6 +12,8 @@ import { BackendConfigModal } from './components/BackendConfigModal';
 import { RecommendationCard } from './components/RecommendationCard';
 import { EvidenceCard } from './components/EvidenceCard';
 import { TestRecommendationCard } from './components/TestRecommendationCard';
+import { BatchUploadView } from './components/BatchUploadView';
+import { CaseStudiesView } from './components/CaseStudiesView';
 
 import {
   checkBackendHealth,
@@ -25,13 +27,17 @@ import {
   CustomerInput,
   CustomerIntelligenceResult,
   AggregateMetrics,
+  RiskLevel,
 } from './types';
+import { predictCustomerRiskLocally } from './utils/mlEngine';
+import { evaluateMarketingStrategy } from './utils/strategyEvaluator';
 import { Sparkles, ArrowRight, Lightbulb, UserCheck } from 'lucide-react';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<ActiveTab>('overview');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isConfigModalOpen, setIsConfigModalOpen] = useState(false);
+  const [targetCaseStudyId, setTargetCaseStudyId] = useState<string | undefined>(undefined);
 
   // API Health & Telemetry State
   const [apiStatus, setApiStatus] = useState<ApiStatus>({
@@ -75,14 +81,38 @@ export default function App() {
     checkHealth();
   }, [checkHealth]);
 
-  // Handle Form Submission
+  // Handle Form Submission with API priority and local model fallback
   const handleAnalyzeSubmit = async (data: CustomerInput) => {
     setFormInputValues(data);
     setIsLoading(true);
     setError(null);
 
     try {
-      const intelligence = await analyzeCustomer(data);
+      let intelligence: CustomerIntelligenceResult;
+      try {
+        // Try live FastAPI backend first
+        intelligence = await analyzeCustomer(data);
+      } catch (backendErr) {
+        // If backend is offline/unreachable, gracefully compute using calibrated local ML model
+        console.warn('Backend API request unfulfilled, utilizing calibrated local model:', backendErr);
+        intelligence = predictCustomerRiskLocally(data);
+      }
+
+      // If user supplied a marketing strategy, evaluate it against 10 case studies
+      if (data.marketingStrategy) {
+        intelligence.marketing_strategy = data.marketingStrategy;
+        intelligence.strategy_evaluation = evaluateMarketingStrategy({
+          strategy: data.marketingStrategy,
+          churnProbability: intelligence.churn_probability,
+          riskSegment: intelligence.risk_segment as RiskLevel,
+          recency: data.recency,
+          frequency: data.frequency,
+          monetary: data.monetary,
+          customerLifespan: data.customerLifespan,
+          avgPurchaseInterval: data.avgPurchaseInterval,
+        });
+      }
+
       setResult(intelligence);
       setActiveTab('intelligence');
     } catch (err: any) {
@@ -90,6 +120,18 @@ export default function App() {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  // Inspect customer from Batch Upload table
+  const handleInspectCustomerFromBatch = (batchIntelligence: CustomerIntelligenceResult) => {
+    setResult(batchIntelligence);
+    setActiveTab('intelligence');
+  };
+
+  // Navigate to Case Studies tab with focus
+  const handleNavigateToCaseStudies = (caseStudyId?: string) => {
+    setTargetCaseStudyId(caseStudyId);
+    setActiveTab('case_studies');
   };
 
   // Handle Selecting a Preset from Overview or Empty State
@@ -138,13 +180,23 @@ export default function App() {
           {activeTab === 'overview' && (
             <Overview
               onAnalyzeClick={() => setActiveTab('intelligence')}
+              onUploadClick={() => setActiveTab('batch_upload')}
+              onCaseStudiesClick={() => setActiveTab('case_studies')}
               onSelectArchetype={handleSelectArchetype}
               metrics={aggregateMetrics}
               apiConnected={apiStatus.connected}
             />
           )}
 
-          {/* TAB 2: CUSTOMER INTELLIGENCE */}
+          {/* TAB 2: BATCH CUSTOMER BASE UPLOAD (EXCEL / CSV) */}
+          {activeTab === 'batch_upload' && (
+            <BatchUploadView
+              onInspectCustomer={handleInspectCustomerFromBatch}
+              onNavigateToCaseStudies={handleNavigateToCaseStudies}
+            />
+          )}
+
+          {/* TAB 3: CUSTOMER INTELLIGENCE */}
           {activeTab === 'intelligence' && (
             <div className="space-y-8 max-w-5xl mx-auto">
               {isLoading ? (
@@ -172,6 +224,7 @@ export default function App() {
                 <CustomerIntelligenceView
                   result={result}
                   onAnalyzeAnother={handleAnalyzeAnother}
+                  onExploreCaseStudy={handleNavigateToCaseStudies}
                 />
               ) : (
                 <div className="space-y-8">
@@ -192,7 +245,12 @@ export default function App() {
             </div>
           )}
 
-          {/* TAB 3: RECOMMENDATIONS FOCUS */}
+          {/* TAB 4: CASE STUDIES & STRATEGY FEEDBACK */}
+          {activeTab === 'case_studies' && (
+            <CaseStudiesView initialCaseStudyId={targetCaseStudyId} />
+          )}
+
+          {/* TAB 5: RECOMMENDATIONS FOCUS */}
           {activeTab === 'recommendations' && (
             <div className="space-y-8 max-w-5xl mx-auto">
               {result ? (

@@ -9,7 +9,9 @@ import {
   WifiOff,
   Settings,
   ChevronRight,
-  BrainCircuit
+  BrainCircuit,
+  FileSpreadsheet,
+  BookOpen,
 } from 'lucide-react';
 import { ActiveTab, ApiStatus } from '../types';
 
@@ -30,10 +32,27 @@ export const Sidebar: React.FC<SidebarProps> = ({
   isMobileOpen = false,
   onCloseMobile,
 }) => {
-  const navItems: Array<{ id: ActiveTab; label: string; icon: React.FC<{ className?: string }> }> = [
+  const navItems: Array<{
+    id: ActiveTab;
+    label: string;
+    icon: React.FC<{ className?: string }>;
+    badge?: string;
+  }> = [
     { id: 'overview', label: 'Overview', icon: LayoutDashboard },
+    {
+      id: 'batch_upload',
+      label: 'Upload Customer Base',
+      icon: FileSpreadsheet,
+      badge: 'Excel/CSV',
+    },
     { id: 'intelligence', label: 'Customer Intelligence', icon: Users },
-    { id: 'recommendations', label: 'Recommendations', icon: Lightbulb },
+    {
+      id: 'case_studies',
+      label: 'Strategy & Case Studies',
+      icon: BookOpen,
+      badge: '10 Cases',
+    },
+    { id: 'recommendations', label: 'Retention Playbook', icon: Lightbulb },
     { id: 'about', label: 'About CustomerIQ', icon: Info },
   ];
 
@@ -102,9 +121,16 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     />
                     <span>{item.label}</span>
                   </div>
-                  {isActive && (
-                    <span className="h-1.5 w-1.5 rounded-full bg-indigo-400" />
-                  )}
+                  <div className="flex items-center gap-1.5">
+                    {item.badge && (
+                      <span className="rounded bg-indigo-500/15 border border-indigo-500/30 px-1.5 py-0.5 text-[9px] font-bold text-indigo-300">
+                        {item.badge}
+                      </span>
+                    )}
+                    {isActive && (
+                      <span className="h-1.5 w-1.5 rounded-full bg-indigo-400" />
+                    )}
+                  </div>
                 </button>
               );
             })}

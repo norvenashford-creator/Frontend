@@ -14,9 +14,12 @@ import {
   LineChart
 } from 'lucide-react';
 import { AggregateMetrics } from '../types';
+import { FileSpreadsheet, BookOpen } from 'lucide-react';
 
 interface OverviewProps {
   onAnalyzeClick: () => void;
+  onUploadClick?: () => void;
+  onCaseStudiesClick?: () => void;
   onSelectArchetype: (archetypeKey: string) => void;
   metrics?: AggregateMetrics | null;
   apiConnected: boolean;
@@ -24,6 +27,8 @@ interface OverviewProps {
 
 export const Overview: React.FC<OverviewProps> = ({
   onAnalyzeClick,
+  onUploadClick,
+  onCaseStudiesClick,
   onSelectArchetype,
   metrics,
   apiConnected,
@@ -81,24 +86,48 @@ export const Overview: React.FC<OverviewProps> = ({
           </p>
 
           <div className="mt-8 flex flex-wrap items-center gap-4">
+            {onUploadClick && (
+              <button
+                id="hero-upload-cta"
+                type="button"
+                onClick={onUploadClick}
+                className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-indigo-600 to-indigo-700 px-6 py-3.5 text-sm font-semibold text-white shadow-lg shadow-indigo-600/25 hover:from-indigo-500 hover:to-indigo-600 transition-all cursor-pointer"
+              >
+                <FileSpreadsheet className="h-4 w-4" />
+                <span>Upload Customer Base (Excel / CSV)</span>
+              </button>
+            )}
+
             <button
               id="hero-primary-cta"
               type="button"
               onClick={onAnalyzeClick}
-              className="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-6 py-3.5 text-sm font-semibold text-white shadow-lg shadow-indigo-600/25 hover:bg-indigo-500 transition-all cursor-pointer"
+              className="inline-flex items-center gap-2 rounded-xl border border-white/15 bg-slate-800/90 px-5 py-3.5 text-sm font-semibold text-white hover:bg-slate-700 transition-all cursor-pointer"
             >
-              <span>Analyze a Customer</span>
+              <span>Single Customer Analysis</span>
               <ArrowRight className="h-4 w-4" />
             </button>
+
+            {onCaseStudiesClick && (
+              <button
+                id="hero-case-studies-cta"
+                type="button"
+                onClick={onCaseStudiesClick}
+                className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-slate-800/60 px-4 py-3.5 text-sm font-semibold text-slate-300 hover:bg-slate-700 hover:text-white transition-all cursor-pointer"
+              >
+                <BookOpen className="h-4 w-4 text-indigo-400" />
+                <span>10 Case Studies & Strategy Feedback</span>
+              </button>
+            )}
 
             <button
               id="hero-secondary-cta"
               type="button"
               onClick={scrollToMetrics}
-              className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-slate-800/80 px-6 py-3.5 text-sm font-semibold text-slate-200 hover:bg-slate-700 hover:text-white transition-all cursor-pointer"
+              className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-slate-800/40 px-4 py-3.5 text-sm font-semibold text-slate-400 hover:text-slate-200 transition-all cursor-pointer"
             >
               <LineChart className="h-4 w-4 text-indigo-400" />
-              <span>Explore Intelligence</span>
+              <span>Explore Benchmark</span>
             </button>
           </div>
         </div>
